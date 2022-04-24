@@ -45,18 +45,21 @@ fn calc_e_d(e: u64, d: u64, t: &BigUint) -> u64 {
     (e * d) % T
 }
 
-fn find_d_e(t: &BigUint) -> (u64, u64) {
+fn find_d_e(t: &BigUint) -> Option<(u64, u64)> {
     let mut d: u64 = t.bits().try_into().unwrap();
-    let mut e: u64 = 0;
+    let mut e: u64 = 2;
 
     let one: u64 = 1;
 
     while calc_e_d(e, d, &t) != one {
+        if d == 2 {
+            return None;
+        }
         e = e + one;
         d = d - one;
     }
     
-    (e, d)
+    Some((e, d))
 }
 
 fn main() {
@@ -75,7 +78,12 @@ fn main() {
 
     println!("Let T = {T}");
 
-    let keys = find_d_e(&T);
+    let keys = if let Some(k) = find_d_e(&T) {
+        k
+    } else {
+        println!("Could not find numbers e and d");
+        return;
+    };
 
     let public_key = PublicKey::new(N.clone(), keys.0);
 
